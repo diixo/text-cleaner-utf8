@@ -474,26 +474,25 @@ void appendToMap(const std::list <wstring_t>& inList, std::map <wstring_t, size_
       {
          std::map <wstring_t, size_t>::iterator it = ioMap.find(str);
 
-         //bool result = true;
+         bool result = true;
 
-         //for (int i = 0; i < str.length() && result; i++)
-         //{
-         //   result = result && (str[i] >= 0x0410 && str[i] <= 0x044f);
-         //}
-
-         //if (result)
-         //{
-         //   wprintf(L"");
-         //}
-
-         if (it != ioMap.end())
+         for (int i = 0; i < str.length() && result; i++)
          {
-            it->second = it->second + 1;
+            result = (str[i] < 0x0400 && str[i] > 0x04ff);
          }
-         else
+
+         if (result)
          {
-            ioMap[str] = 1;
+            if (it != ioMap.end())
+            {
+               it->second = it->second + 1;
+            }
+            else
+            {
+               ioMap[str] = 1;
+            }
          }
+
       }
    }
 }
