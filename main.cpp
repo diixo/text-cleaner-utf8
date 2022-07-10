@@ -474,17 +474,17 @@ void appendToMap(const std::list <wstring_t>& inList, std::map <wstring_t, size_
       {
          std::map <wstring_t, size_t>::iterator it = ioMap.find(str);
 
-         bool result = true;
+         //bool result = true;
 
-         for (int i = 0; i < str.length() && result; i++)
-         {
-            result = result && (str[i] >= 0x0410 && str[i] <= 0x044f);
-         }
+         //for (int i = 0; i < str.length() && result; i++)
+         //{
+         //   result = result && (str[i] >= 0x0410 && str[i] <= 0x044f);
+         //}
 
-         if (result)
-         {
-            wprintf(L"");
-         }
+         //if (result)
+         //{
+         //   wprintf(L"");
+         //}
 
          if (it != ioMap.end())
          {
@@ -627,103 +627,6 @@ void loadFile_utf8(const char* filepath, const std::wstring& filename_out, std::
 }
 
 
-void loadFile(const std::wstring& filename_in, const std::wstring& filename_out, std::map <wstring_t, size_t>& ioMap)
-{
-   setlocale(LC_ALL, "Russian");
-   //////////////////////////////////////////////////////////////////////////
-
-   FILE *pFile = _wfopen(filename_in.c_str(), L"rt, ccs=UTF-8");
-
-   // MSDN: Allowed values of encoding are UNICODE, UTF-8, and UTF-16LE.
-
-   if (pFile == NULL)
-   {
-      wprintf(L"can't load file: %s\n", filename_in.c_str());
-      return;
-   }
-   
-   FILE *pOutput = (filename_out.length() > 0) ? _wfopen(filename_out.c_str(), L"w, ccs=UTF-16LE") : 0;
-   UInt32 lineNumber = 0;
-   /////////////////////////////////////////////////////////////////////////
-
-   wchar_t buff[16384];
-   buff[0] = 0;
-   wchar_t* pBuff = buff;
-  
-   wchar_t wch = 0;
-   size_t str_sz = 0;
-
-   //////////////////////////////////////////////////////////////////////////
-   while ((wch = fgetwc(pFile)) != WEOF)
-   {
-      if (wch == L'\n')
-      {
-         if (pOutput) fputwc(wch, pOutput);
-
-         if (pBuff != buff)
-         {
-            *pBuff = 0;
-            pBuff = buff;
-
-            processString(buff, str_sz, ioMap);
-
-            str_sz = 0;
-         }
-         else
-         {
-            //printf("!!! NL empty, skipped\n");
-         }
-         lineNumber++;
-      }
-      else
-      {
-         const wchar_t tch = translateChar(wch);
-
-         // check if need to skip symbol.
-         if (tch > 0)
-         {
-            if (pOutput) fputwc(tch, pOutput);
-
-            *pBuff = tch;
-            pBuff++;
-            str_sz++;
-         }
-      }
-   }
-
-   fclose(pFile);
-   if (pOutput) fclose(pOutput);
-}
-
-void mergeMaps(
-   const std::map <wstring_t, size_t>& mainMap, 
-   const std::map <wstring_t, size_t>& compareMap, 
-   std::map <wstring_t, size_t>& diffMap, 
-   std::map <wstring_t, size_t>& resultMap)
-{
-   resultMap = mainMap;
-
-   for (std::map <wstring_t, size_t>::const_iterator it = compareMap.begin(); it != compareMap.end(); ++it)
-   {
-      auto its = resultMap.find(it->first);
-      if (its != resultMap.end())
-      {
-         its->second++;
-
-         //auto itd = diffMap.find(it->first);
-         //if (itd != diffMap.end())
-         //{
-         //   itd->second++;
-         //}
-      }
-      else
-      {
-         resultMap[it->first] = 1;
-         diffMap[it->first] = 1;
-      }
-   }
-}
-
 void maptofile(const wstring_t filepath, const std::map <wstring_t, size_t>& iMap)
 {
    FILE* pOutFile = _wfopen(filepath.c_str(), L"w, ccs=UTF-16LE");
@@ -744,7 +647,7 @@ void maptofile(const wstring_t filepath, const std::map <wstring_t, size_t>& iMa
    fclose(pOutFile);
 }
 
-void wtofile(const wstring_t filepath, const std::map <wstring_t, size_t>& iMap, const wstring_t title)
+void mapToFile(const wstring_t filepath, const std::map <wstring_t, size_t>& iMap, const wstring_t title)
 {
    FILE* pOutFile = _wfopen(wstring_t(filepath + L"--dictionary.dictionary").c_str(), L"w, ccs=UTF-16LE");
 
@@ -786,58 +689,8 @@ int main(int argc, char* argv[])
    {
       const wstring_t mainFile = cstring_to_wstring(argv[1]);
       loadFile_utf8(argv[1], mainFile + L".u16", mainMap);
-      wtofile(mainFile, mainMap, wstring_t());
+      mapToFile(mainFile, mainMap, wstring_t());
 
-      ///////////////////////////////////////////////////////////////
-      /*
-      std::map <wstring_t, size_t> diiMap;
-
-      for (auto it = mainMap.begin(); it != mainMap.end(); it++)
-      {
-         std::list <wstring_t> tmplist;
-
-         for (auto itt = mainMap.begin(); itt != mainMap.end(); itt++)
-         {
-            if (it != itt)
-            {
-               if (it->first.size() > 3)
-               {
-                  if (itt->first.find(it->first) == 0)
-                  {
-                     tmplist.push_back(itt->first);
-                  }
-               }
-            }
-         }
-         if (tmplist.size() > 1)
-         {
-            diiMap[it->first] = 0;
-
-            for (auto i = tmplist.begin(); i != tmplist.end(); i++)
-            {
-               diiMap[*i] = 0;
-            }
-            printf("<< sz=%d\n", diiMap.size());
-         }
-      }
-
-      wtofile(L"filtered", diiMap, wstring_t());
-      */
-      /*
-      if (argc == 3)
-      {
-         const wstring_t cmpFile = cstring_to_wstring(argv[2]);
-         const wstring_t resultFile(L"result");
-
-         loadFile_utf8(argv[2], cmpFile + L"--dump", cmpMap);
-
-         mergeMaps(mainMap, cmpMap, diffMap, resultMap);
-
-         wtofile(cmpFile, cmpMap, wstring_t());
-         wtofile(wstring_t(L"diff"), diffMap, wstring_t());
-         wtofile(resultFile, resultMap, mainFile + wstring_t(L"/") + cmpFile);
-      }
-      */
 
       report(mainMap, cmpMap, diffMap, resultMap);
    }
