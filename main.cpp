@@ -149,21 +149,15 @@ wchar_t translateChar(const wchar_t ch)
       return space;
    }
 
-   const wchar_t replaceTable[11] =
+   const wchar_t replaceTable[2] =
    {
-      0x0022,  // """
-      0x0028,  // ("(")
-      0x0029,  // (")") 29
       0x00a0,  // NBPS = 160
-      0x0085,  // NEL
+      0x0085 //,  // NEL
 
-      0x007b,  // ("{")
-      0x007c,  // ("|")
-      0x007d,  // ("}")
+      //0x0022,  // """
+      //0x0028,  // ("(")
+      //0x0029,  // (")") 29
 
-      0x005e,  // ("^")
-      0x005b,  // ("[")
-      0x005d   // ("]")
       // "{", "}", "|", "\", "^", "~", "[", "]", "`"
    };
 
@@ -405,8 +399,11 @@ void appendToMap(const std::list <wstring_t>& inList, std::map <wstring_t, size_
    {
       wstring_t str = *it;
 
-      rtrim(str, L"\x0023\x0026\x0027\x0028\x0029\x002a\x002d\x002e\x002f\x003a\x003b\x003c\x003d\x003e\x003f\x005c\x007e\x00a9\x00ae\x005f");
-      ltrim(str, L"\x0023\x0026\x0027\x0028\x0029\x002a\x002d\x002f\x005c\x007e\x00a9\x00ae\x005f");
+      rtrim(str, L"\x0022\x0027\x0028\x0029\x003a");
+      ltrim(str, L"\x0022\x0027\x0028\x0029\x003a\x002e");
+
+      //rtrim(str, L"\x0023\x0026\x0027\x0028\x0029\x002a\x002d\x002e\x002f\x003a\x003b\x003c\x003d\x003e\x003f\x005c\x007e\x00a9\x00ae\x005f");
+      //ltrim(str, L"\x0023\x0026\x0027\x0028\x0029\x002a\x002d\x002f\x005c\x007e\x00a9\x00ae\x005f");
 
       bool valid = !str.empty();
       if (valid)
@@ -427,6 +424,13 @@ void appendToMap(const std::list <wstring_t>& inList, std::map <wstring_t, size_
             wcschr(str.c_str(), L'#') ||
             wcschr(str.c_str(), L'(') ||
             wcschr(str.c_str(), L')') ||
+
+            wcschr(str.c_str(), L'{') ||
+            wcschr(str.c_str(), L'|') ||
+            wcschr(str.c_str(), L'}') ||
+            wcschr(str.c_str(), L'^') ||
+            wcschr(str.c_str(), L']') ||
+            wcschr(str.c_str(), L'[') ||
             //wcschr(str.c_str(), L'\x002f') ||
             //wcschr(str.c_str(), L'\x005c') ||
             wcschr(str.c_str(), L'?') )
@@ -478,7 +482,7 @@ void appendToMap(const std::list <wstring_t>& inList, std::map <wstring_t, size_
 
          for (int i = 0; i < str.length() && result; i++)
          {
-            result = (str[i] < 0x0400 && str[i] > 0x04ff);
+            result = ((str[i] < 0x0400) || (str[i] > 0x04ff));
          }
 
          if (result)
@@ -626,25 +630,25 @@ void loadFile_utf8(const char* filepath, const std::wstring& filename_out, std::
 }
 
 
-void maptofile(const wstring_t filepath, const std::map <wstring_t, size_t>& iMap)
-{
-   FILE* pOutFile = _wfopen(filepath.c_str(), L"w, ccs=UTF-16LE");
-
-   const wstring_t delim = L" #";
-   wstring_t str;
-
-   for (std::map <wstring_t, size_t>::const_iterator it = iMap.begin(); it != iMap.end(); ++it)
-   {
-      fputws(&(it->first[0]), pOutFile);
-      fputws(&(delim[0]), pOutFile);
-
-      //str = std::to_wstring(it->second);
-      //fputws(&(str[0]), pOutFile);
-
-      fputwc(L'\n', pOutFile);
-   }
-   fclose(pOutFile);
-}
+//void maptofile(const wstring_t filepath, const std::map <wstring_t, size_t>& iMap)
+//{
+//   FILE* pOutFile = _wfopen(filepath.c_str(), L"w, ccs=UTF-16LE");
+//
+//   const wstring_t delim = L" #";
+//   wstring_t str;
+//
+//   for (std::map <wstring_t, size_t>::const_iterator it = iMap.begin(); it != iMap.end(); ++it)
+//   {
+//      fputws(&(it->first[0]), pOutFile);
+//      fputws(&(delim[0]), pOutFile);
+//
+//      //str = std::to_wstring(it->second);
+//      //fputws(&(str[0]), pOutFile);
+//
+//      fputwc(L'\n', pOutFile);
+//   }
+//   fclose(pOutFile);
+//}
 
 void mapToFile(const wstring_t filepath, const std::map <wstring_t, size_t>& iMap, const wstring_t title)
 {
@@ -661,9 +665,16 @@ void mapToFile(const wstring_t filepath, const std::map <wstring_t, size_t>& iMa
       fputwc(L'\n', pOutFile);
    }
 
+   wstring_t str;
+
    for (std::map <wstring_t, size_t>::const_iterator it = iMap.begin(); it != iMap.end(); ++it)
    {
       fputws(&(it->first[0]), pOutFile);
+      fputwc(L' ', pOutFile);
+
+      str = std::to_wstring(it->second);
+      fputws(&(str[0]), pOutFile);
+
       fputwc(L'\n', pOutFile);
    }
    fclose(pOutFile);
@@ -681,15 +692,13 @@ int main(int argc, char* argv[])
    {
       report(mainMap, cmpMap, diffMap, resultMap);
       wprintf(L"No extra command-line arguments passed:\n");
-      wprintf(L"%s <basefile.u16>\n", cstring_to_wstring(argv[0]).c_str());
-      wprintf(L"%s <basefile.u16> <newfile.u16>\n", cstring_to_wstring(argv[0]).c_str());
+      wprintf(L"%s <inputfile.u16>\n", cstring_to_wstring(argv[0]).c_str());
    }
    else
    {
       const wstring_t mainFile = cstring_to_wstring(argv[1]);
       loadFile_utf8(argv[1], mainFile + L".u16", mainMap);
       mapToFile(mainFile, mainMap, wstring_t());
-
 
       report(mainMap, cmpMap, diffMap, resultMap);
    }
