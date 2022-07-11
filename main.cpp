@@ -399,8 +399,8 @@ void appendToMap(const std::list <wstring_t>& inList, std::map <wstring_t, size_
    {
       wstring_t str = *it;
 
-      rtrim(str, L"\x0022\x0027\x0028\x0029\x003a");
-      ltrim(str, L"\x0022\x0027\x0028\x0029\x003a\x002e");
+      rtrim(str, L"\x0022\x0027\x0028\x0029\x003a\x003f\x002e");
+      ltrim(str, L"\x0022\x0027\x0028\x0029\x003a");
 
       //rtrim(str, L"\x0023\x0026\x0027\x0028\x0029\x002a\x002d\x002e\x002f\x003a\x003b\x003c\x003d\x003e\x003f\x005c\x007e\x00a9\x00ae\x005f");
       //ltrim(str, L"\x0023\x0026\x0027\x0028\x0029\x002a\x002d\x002f\x005c\x007e\x00a9\x00ae\x005f");
@@ -431,8 +431,12 @@ void appendToMap(const std::list <wstring_t>& inList, std::map <wstring_t, size_
             wcschr(str.c_str(), L'^') ||
             wcschr(str.c_str(), L']') ||
             wcschr(str.c_str(), L'[') ||
-            //wcschr(str.c_str(), L'\x002f') ||
-            //wcschr(str.c_str(), L'\x005c') ||
+
+            wcschr(str.c_str(), L'\x002f') ||
+            wcschr(str.c_str(), L'\x005c') ||
+            //(str.front() == L'+') ||
+            //(str.front() == L'-') ||
+
             wcschr(str.c_str(), L'?') )
             valid = false;
       }
@@ -629,26 +633,6 @@ void loadFile_utf8(const char* filepath, const std::wstring& filename_out, std::
    if (pOutput) fclose(pOutput);
 }
 
-
-//void maptofile(const wstring_t filepath, const std::map <wstring_t, size_t>& iMap)
-//{
-//   FILE* pOutFile = _wfopen(filepath.c_str(), L"w, ccs=UTF-16LE");
-//
-//   const wstring_t delim = L" #";
-//   wstring_t str;
-//
-//   for (std::map <wstring_t, size_t>::const_iterator it = iMap.begin(); it != iMap.end(); ++it)
-//   {
-//      fputws(&(it->first[0]), pOutFile);
-//      fputws(&(delim[0]), pOutFile);
-//
-//      //str = std::to_wstring(it->second);
-//      //fputws(&(str[0]), pOutFile);
-//
-//      fputwc(L'\n', pOutFile);
-//   }
-//   fclose(pOutFile);
-//}
 
 void mapToFile(const wstring_t filepath, const std::map <wstring_t, size_t>& iMap, const wstring_t title)
 {
