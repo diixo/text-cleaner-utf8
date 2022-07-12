@@ -130,8 +130,8 @@ wchar_t translateChar(const wchar_t ch)
 
    if ((ch >= 0x0041) && (ch <= 0x005a)) // check latin symbols
    {
-      //return ch;
-      return towlower(ch);
+      return ch;
+      //return towlower(ch);
    }
 
    if (isApostrophe(ch))
@@ -398,6 +398,15 @@ void appendToMap(const std::list <wstring_t>& inList, std::map <wstring_t, size_
    for (std::list <wstring_t>::const_iterator it = inList.begin(); it != inList.end(); ++it)
    {
       wstring_t str = *it;
+
+      for (int i = 0; i < str.length(); i++)
+      {
+         if ((str[i] >= 0x0041) && (str[i] <= 0x005a))
+         {
+            str[i] = towlower(str[i]);
+         }
+      }
+
 
       rtrim(str, L"\x0022\x0027\x0028\x0029\x003a\x003f\x002e");
       ltrim(str, L"\x0022\x0027\x0028\x0029\x003a\x002b\x002d");
