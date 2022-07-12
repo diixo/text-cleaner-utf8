@@ -400,7 +400,7 @@ void appendToMap(const std::list <wstring_t>& inList, std::map <wstring_t, size_
       wstring_t str = *it;
 
       rtrim(str, L"\x0022\x0027\x0028\x0029\x003a\x003f\x002e");
-      ltrim(str, L"\x0022\x0027\x0028\x0029\x003a");
+      ltrim(str, L"\x0022\x0027\x0028\x0029\x003a\x002b\x002d");
 
       //rtrim(str, L"\x0023\x0026\x0027\x0028\x0029\x002a\x002d\x002e\x002f\x003a\x003b\x003c\x003d\x003e\x003f\x005c\x007e\x00a9\x00ae\x005f");
       //ltrim(str, L"\x0023\x0026\x0027\x0028\x0029\x002a\x002d\x002f\x005c\x007e\x00a9\x00ae\x005f");
@@ -478,29 +478,31 @@ void appendToMap(const std::list <wstring_t>& inList, std::map <wstring_t, size_
          }
       }
 
-      if (!str.empty() && !is_anydigit(str) && valid)
+      if (valid)
       {
-         std::map <wstring_t, size_t>::iterator it = ioMap.find(str);
-
-         bool result = true;
-
-         for (int i = 0; i < str.length() && result; i++)
+         if (!str.empty() && !is_anydigit(str))
          {
-            result = ((str[i] < 0x0400) || (str[i] > 0x04ff));
-         }
+            std::map <wstring_t, size_t>::iterator it = ioMap.find(str);
 
-         if (result)
-         {
-            if (it != ioMap.end())
+            bool result = true;
+
+            for (int i = 0; i < str.length() && result; i++)
             {
-               it->second = it->second + 1;
+               result = ((str[i] < 0x0400) || (str[i] > 0x04ff));
             }
-            else
+
+            if (result)
             {
-               ioMap[str] = 1;
+               if (it != ioMap.end())
+               {
+                  it->second = it->second + 1;
+               }
+               else
+               {
+                  ioMap[str] = 1;
+               }
             }
          }
-
       }
    }
 }
@@ -545,7 +547,7 @@ void processString(const wchar_t* str, const size_t str_sz, std::map <wstring_t,
 
    std::list <wstring_t> tokenList;
 
-   wcstok(wstr, L"\x0020\x0021\x002c\x003b", tokenList);   // " !,;"
+   wcstok(wstr, L"\x0020\x0021\x002c\x003b\x007c", tokenList);   // " !,;|"
 
    appendToMap(tokenList, ioMap);
 }
