@@ -393,11 +393,17 @@ bool is_digit(const wstring_t& inStr, size_t start_id = 0)
    return result;
 }
 
-void appendToMap(const std::list <wstring_t>& inList, std::map <wstring_t, size_t>& ioMap)
+void trimming(const std::map <wstring_t, size_t>& filterMap, std::list <wstring_t>& outList)
 {
-   for (std::list <wstring_t>::const_iterator it = inList.begin(); it != inList.end(); ++it)
+   for (std::list <wstring_t>::iterator it = outList.begin(); it != outList.end(); )
    {
-      wstring_t str = *it;
+      wstring_t& str = *it;
+
+      rtrim(str, L"\x0022\x0027\x0028\x0029\x003a\x003f\x002e");
+      ltrim(str, L"\x0022\x0027\x0028\x0029\x003a\x002b\x002d");
+
+      //rtrim(str, L"\x0023\x0026\x0027\x0028\x0029\x002a\x002d\x002e\x002f\x003a\x003b\x003c\x003d\x003e\x003f\x005c\x007e\x00a9\x00ae\x005f");
+      //ltrim(str, L"\x0023\x0026\x0027\x0028\x0029\x002a\x002d\x002f\x005c\x007e\x00a9\x00ae\x005f");
 
       for (int i = 0; i < str.length(); i++)
       {
@@ -407,12 +413,23 @@ void appendToMap(const std::list <wstring_t>& inList, std::map <wstring_t, size_
          }
       }
 
+      auto fit = filterMap.find(str);
+      if (fit != filterMap.end())
+      {
+         it = outList.erase(it);
+      }
+      else
+      {
+         ++it;
+      }
+   }
+}
 
-      rtrim(str, L"\x0022\x0027\x0028\x0029\x003a\x003f\x002e");
-      ltrim(str, L"\x0022\x0027\x0028\x0029\x003a\x002b\x002d");
-
-      //rtrim(str, L"\x0023\x0026\x0027\x0028\x0029\x002a\x002d\x002e\x002f\x003a\x003b\x003c\x003d\x003e\x003f\x005c\x007e\x00a9\x00ae\x005f");
-      //ltrim(str, L"\x0023\x0026\x0027\x0028\x0029\x002a\x002d\x002f\x005c\x007e\x00a9\x00ae\x005f");
+void appendToMap(const std::list <wstring_t>& inList, std::map <wstring_t, size_t>& ioMap)
+{
+   for (std::list <wstring_t>::const_iterator it = inList.begin(); it != inList.end(); ++it)
+   {
+      const wstring_t str = *it;
 
       bool valid = !str.empty();
       if (valid)
@@ -548,21 +565,19 @@ void report(
 //////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////
-void processString(const wchar_t* str, const size_t str_sz, std::map <wstring_t, size_t>& ioMap)
+void processString(const wstring_t& wstr, std::map <wstring_t, size_t>& ioMap)
 {
-   const wstring_t wstr(str);
-
-   assert(str_sz == wstr.size());
-
    std::list <wstring_t> tokenList;
 
    wcstok(wstr, L"\x0020\x0021\x002c\x003b\x007c", tokenList);   // " !,;|"
+
+   trimming(std::map <wstring_t, size_t>(), tokenList);
 
    appendToMap(tokenList, ioMap);
 }
 
 
-void loadFile_utf8(const char* filepath, const std::wstring& filename_out, std::map <wstring_t, size_t>& ioMap)
+void loadFile_utf8(const char* filepath, const std::wstring& filename_out, const std::map <wstring_t, size_t>& filterMap, std::map <wstring_t, size_t>& ioMap)
 {
    setlocale(LC_ALL, "Russian");
    //////////////////////////////////////////////////////////////////////////
@@ -614,7 +629,12 @@ void loadFile_utf8(const char* filepath, const std::wstring& filename_out, std::
             *pBuff = 0;
             pBuff = buff;
 
-            processString(buff, str_sz, ioMap);
+            {
+               const wstring_t wstr(buff);
+               assert(str_sz == wstr.size());
+
+               processString(wstr, ioMap);
+            }
 
             str_sz = 0;
          }
@@ -632,6 +652,80 @@ void loadFile_utf8(const char* filepath, const std::wstring& filename_out, std::
          if (tch > 0)
          {
             if (pOutput) fputwc(wch, pOutput);  //write original symbol
+
+            *pBuff = tch;
+            pBuff++;
+            str_sz++;
+         }
+      }
+   }
+
+   fclose(pFile);
+   if (pOutput) fclose(pOutput);
+}
+
+
+void loadFile(const std::wstring& filename_in, const std::wstring& filename_out, std::map <wstring_t, size_t>& ioMap)
+{
+   setlocale(LC_ALL, "Russian");
+   //////////////////////////////////////////////////////////////////////////
+
+   FILE *pFile = _wfopen(filename_in.c_str(), L"rt, ccs=UTF-8");
+
+   // MSDN: Allowed values of encoding are UNICODE, UTF-8, and UTF-16LE.
+
+   if (pFile == NULL)
+   {
+      wprintf(L"can't load file: %s\n", filename_in.c_str());
+      return;
+   }
+
+   FILE *pOutput = (filename_out.length() > 0) ? _wfopen(filename_out.c_str(), L"w, ccs=UTF-16LE") : 0;
+   UInt32 lineNumber = 0;
+   /////////////////////////////////////////////////////////////////////////
+
+   wchar_t buff[16384];
+   buff[0] = 0;
+   wchar_t* pBuff = buff;
+
+   wchar_t wch = 0;
+   size_t str_sz = 0;
+
+   //////////////////////////////////////////////////////////////////////////
+   while ((wch = fgetwc(pFile)) != WEOF)
+   {
+      if (wch == L'\n')
+      {
+         if (pOutput) fputwc(wch, pOutput);
+
+         if (pBuff != buff)
+         {
+            *pBuff = 0;
+            pBuff = buff;
+
+            //processString(buff, str_sz, ioMap);
+            {
+               const wstring_t wstr(buff);
+               assert(str_sz == wstr.size());
+               ioMap[wstr] = 1;
+            }
+
+            str_sz = 0;
+         }
+         else
+         {
+            //printf("!!! NL empty, skipped\n");
+         }
+         lineNumber++;
+      }
+      else
+      {
+         const wchar_t tch = translateChar(wch);
+
+         // check if need to skip symbol.
+         if (tch > 0)
+         {
+            if (pOutput) fputwc(tch, pOutput);
 
             *pBuff = tch;
             pBuff++;
@@ -679,23 +773,36 @@ void mapToFile(const wstring_t filepath, const std::map <wstring_t, size_t>& iMa
 int main(int argc, char* argv[])
 {
    std::map <wstring_t, size_t> mainMap;
-   std::map <wstring_t, size_t> cmpMap;
-   std::map <wstring_t, size_t> diffMap;
-   std::map <wstring_t, size_t> resultMap;
+   std::map <wstring_t, size_t> filterMap;
 
    if (argc < 2)
    {
-      report(mainMap, cmpMap, diffMap, resultMap);
+      report(mainMap, filterMap, filterMap, filterMap);
       wprintf(L"No extra command-line arguments passed:\n");
       wprintf(L"%s <inputfile.u16>\n", cstring_to_wstring(argv[0]).c_str());
    }
    else
    {
-      const wstring_t mainFile = cstring_to_wstring(argv[1]);
-      loadFile_utf8(argv[1], mainFile + L".u16", mainMap);
-      mapToFile(mainFile, mainMap, wstring_t());
+      if (argc == 3)
+      {
+         const wstring_t filterFile = cstring_to_wstring(argv[1]);
+         const wstring_t mainFile = cstring_to_wstring(argv[2]);
 
-      report(mainMap, cmpMap, diffMap, resultMap);
+         loadFile(filterFile, wstring_t(), filterMap);
+         loadFile_utf8(argv[1], mainFile + L".u16", filterMap, mainMap);
+         mapToFile(mainFile, mainMap, wstring_t());
+
+      }
+      if (argc == 2)
+      {
+         const wstring_t mainFile = cstring_to_wstring(argv[1]);
+
+         loadFile_utf8(argv[1], mainFile + L".u16", filterMap, mainMap);
+         mapToFile(mainFile, mainMap, wstring_t());
+
+         //report(mainMap, cmpMap, diffMap, resultMap);
+      }
+
    }
 
    return 0;
