@@ -565,13 +565,13 @@ void report(
 //////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////
-void processString(const wstring_t& wstr, std::map <wstring_t, size_t>& ioMap)
+void processString(const wstring_t& wstr, const std::map <wstring_t, size_t>& filterMap, std::map <wstring_t, size_t>& ioMap)
 {
    std::list <wstring_t> tokenList;
 
    wcstok(wstr, L"\x0020\x0021\x002c\x003b\x007c", tokenList);   // " !,;|"
 
-   trimming(std::map <wstring_t, size_t>(), tokenList);
+   trimming(filterMap, tokenList);
 
    appendToMap(tokenList, ioMap);
 }
@@ -633,7 +633,7 @@ void loadFile_utf8(const char* filepath, const std::wstring& filename_out, const
                const wstring_t wstr(buff);
                assert(str_sz == wstr.size());
 
-               processString(wstr, ioMap);
+               processString(wstr, filterMap, ioMap);
             }
 
             str_sz = 0;
@@ -791,7 +791,6 @@ int main(int argc, char* argv[])
          loadFile(filterFile, wstring_t(), filterMap);
          loadFile_utf8(argv[1], mainFile + L".u16", filterMap, mainMap);
          mapToFile(mainFile, mainMap, wstring_t());
-
       }
       if (argc == 2)
       {
@@ -802,7 +801,6 @@ int main(int argc, char* argv[])
 
          //report(mainMap, cmpMap, diffMap, resultMap);
       }
-
    }
 
    return 0;
