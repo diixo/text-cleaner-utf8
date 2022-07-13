@@ -405,23 +405,27 @@ void trimming(const std::map <wstring_t, size_t>& filterMap, std::list <wstring_
       //rtrim(wstr, L"\x0023\x0026\x0027\x0028\x0029\x002a\x002d\x002e\x002f\x003a\x003b\x003c\x003d\x003e\x003f\x005c\x007e\x00a9\x00ae\x005f");
       //ltrim(wstr, L"\x0023\x0026\x0027\x0028\x0029\x002a\x002d\x002f\x005c\x007e\x00a9\x00ae\x005f");
 
-      for (int i = 0; i < wstr.length(); i++)
       {
-         if ((wstr[i] >= 0x0041) && (wstr[i] <= 0x005a))
+         wstring_t tstr = wstr;
+         for (int i = 0; i < tstr.length(); i++)
          {
-            wstr[i] = towlower(wstr[i]);
+            if ((tstr[i] >= 0x0041) && (tstr[i] <= 0x005a))
+            {
+               tstr[i] = towlower(tstr[i]);
+            }
+         }
+
+         auto fit = filterMap.find(tstr);
+         if (fit != filterMap.end())
+         {
+            it = outList.erase(it);
+         }
+         else
+         {
+            ++it;
          }
       }
 
-      auto fit = filterMap.find(wstr);
-      if (fit != filterMap.end())
-      {
-         it = outList.erase(it);
-      }
-      else
-      {
-         ++it;
-      }
    }
 }
 
@@ -429,7 +433,15 @@ void appendToMap(const std::list <wstring_t>& inList, std::map <wstring_t, size_
 {
    for (std::list <wstring_t>::const_iterator it = inList.begin(); it != inList.end(); ++it)
    {
-      const wstring_t str = *it;
+      wstring_t str = *it;
+
+      for (int i = 0; i < str.length(); i++)
+      {
+         if ((str[i] >= 0x0041) && (str[i] <= 0x005a))
+         {
+            str[i] = towlower(str[i]);
+         }
+      }
 
       bool valid = !str.empty();
       if (valid)
@@ -573,11 +585,13 @@ void processString(const wstring_t& wstr, const std::map <wstring_t, size_t>& fi
 
    trimming(filterMap, tokenList);
 
+   // TODO: save to file tokenList after filtering, but keep UpperChars in words.
+
    appendToMap(tokenList, ioMap);
 }
 
 
-void loadFile_utf8(const char* filepath, const std::wstring& filename_out, const std::map <wstring_t, size_t>& filterMap, std::map <wstring_t, size_t>& ioMap)
+void loadFile_utf8(const char* filepath, const std::wstring& filename_out, const std::map <wstring_t, size_t>& filterMap, std::map <wstring_t, size_t>& ioMap, const std::wstring& filtered_out)
 {
    setlocale(LC_ALL, "Russian");
    //////////////////////////////////////////////////////////////////////////
@@ -595,6 +609,7 @@ void loadFile_utf8(const char* filepath, const std::wstring& filename_out, const
    }
 
    FILE *pOutput = (filename_out.length() > 0) ? _wfopen(filename_out.c_str(), L"w, ccs=UTF-16LE") : 0;
+   FILE *pOutputF = (filtered_out.length() > 0) ? _wfopen(filtered_out.c_str(), L"w, ccs=UTF-16LE") : 0;
    UInt32 lineNumber = 0;
    /////////////////////////////////////////////////////////////////////////
 
@@ -633,7 +648,7 @@ void loadFile_utf8(const char* filepath, const std::wstring& filename_out, const
                const wstring_t wstr(buff);
                assert(str_sz == wstr.size());
 
-               processString(wstr, filterMap, ioMap);
+               processString(wstr, filterMap, ioMap /*, pOutputF*/);
             }
 
             str_sz = 0;
@@ -662,6 +677,7 @@ void loadFile_utf8(const char* filepath, const std::wstring& filename_out, const
 
    fclose(pFile);
    if (pOutput) fclose(pOutput);
+   if (pOutputF) fclose(pOutputF);
 }
 
 
@@ -789,14 +805,14 @@ int main(int argc, char* argv[])
          const wstring_t mainFile = cstring_to_wstring(argv[2]);
 
          loadFile(filterFile, wstring_t(), filterMap);
-         loadFile_utf8(argv[1], mainFile + L".u16", filterMap, mainMap);
+         loadFile_utf8(argv[1], mainFile + L".u16", filterMap, mainMap, wstring_t());
          mapToFile(mainFile, mainMap, wstring_t());
       }
       if (argc == 2)
       {
          const wstring_t mainFile = cstring_to_wstring(argv[1]);
 
-         loadFile_utf8(argv[1], mainFile + L".u16", filterMap, mainMap);
+         loadFile_utf8(argv[1], mainFile + L".u16", filterMap, mainMap, wstring_t());
          mapToFile(mainFile, mainMap, wstring_t());
 
          //report(mainMap, cmpMap, diffMap, resultMap);
