@@ -397,23 +397,23 @@ void trimming(const std::map <wstring_t, size_t>& filterMap, std::list <wstring_
 {
    for (std::list <wstring_t>::iterator it = outList.begin(); it != outList.end(); )
    {
-      wstring_t& str = *it;
+      wstring_t& wstr = *it;
 
-      rtrim(str, L"\x0022\x0027\x0028\x0029\x003a\x003f\x002e");
-      ltrim(str, L"\x0022\x0027\x0028\x0029\x003a\x002b\x002d");
+      rtrim(wstr, L"\x0022\x0027\x0028\x0029\x003a\x003f\x002e");
+      ltrim(wstr, L"\x0022\x0027\x0028\x0029\x003a\x002b\x002d");
 
-      //rtrim(str, L"\x0023\x0026\x0027\x0028\x0029\x002a\x002d\x002e\x002f\x003a\x003b\x003c\x003d\x003e\x003f\x005c\x007e\x00a9\x00ae\x005f");
-      //ltrim(str, L"\x0023\x0026\x0027\x0028\x0029\x002a\x002d\x002f\x005c\x007e\x00a9\x00ae\x005f");
+      //rtrim(wstr, L"\x0023\x0026\x0027\x0028\x0029\x002a\x002d\x002e\x002f\x003a\x003b\x003c\x003d\x003e\x003f\x005c\x007e\x00a9\x00ae\x005f");
+      //ltrim(wstr, L"\x0023\x0026\x0027\x0028\x0029\x002a\x002d\x002f\x005c\x007e\x00a9\x00ae\x005f");
 
-      for (int i = 0; i < str.length(); i++)
+      for (int i = 0; i < wstr.length(); i++)
       {
-         if ((str[i] >= 0x0041) && (str[i] <= 0x005a))
+         if ((wstr[i] >= 0x0041) && (wstr[i] <= 0x005a))
          {
-            str[i] = towlower(str[i]);
+            wstr[i] = towlower(wstr[i]);
          }
       }
 
-      auto fit = filterMap.find(str);
+      auto fit = filterMap.find(wstr);
       if (fit != filterMap.end())
       {
          it = outList.erase(it);
