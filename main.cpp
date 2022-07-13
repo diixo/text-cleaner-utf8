@@ -723,6 +723,7 @@ void loadFile(const std::wstring& filename_in, const std::wstring& filename_out,
             {
                const wstring_t wstr(buff);
                assert(str_sz == wstr.size());
+
                ioMap[wstr] = 1;
             }
 
@@ -805,7 +806,7 @@ int main(int argc, char* argv[])
          const wstring_t mainFile = cstring_to_wstring(argv[2]);
 
          loadFile(filterFile, wstring_t(), filterMap);
-         loadFile_utf8(argv[1], mainFile + L".u16", filterMap, mainMap, wstring_t());
+         loadFile_utf8(argv[2], mainFile + L".u16", filterMap, mainMap, wstring_t());
          mapToFile(mainFile, mainMap, wstring_t());
       }
       if (argc == 2)
