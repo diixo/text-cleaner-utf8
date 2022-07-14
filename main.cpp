@@ -508,6 +508,7 @@ void appendToMap(const std::list <wstring_t>& inList, std::map <wstring_t, size_
                (wcsstr(str.c_str(), L"<-")   != 0) ||
                (wcsstr(str.c_str(), L"->")   != 0) ||
                (wcsstr(str.c_str(), L"*.")   != 0) ||
+               (wcsstr(str.c_str(), L"&#")   != 0) ||
                (wcsstr(str.c_str(), L"...")  != 0) )
             {
                valid = false;
@@ -577,13 +578,31 @@ void report(
 //////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////
-void processString(const wstring_t& wstr, const std::map <wstring_t, size_t>& filterMap, std::map <wstring_t, size_t>& ioMap)
+void processString(const wstring_t& wstr, const std::map <wstring_t, size_t>& filterMap, std::map <wstring_t, size_t>& ioMap, FILE* filteredOut)
 {
    std::list <wstring_t> tokenList;
 
    wcstok(wstr, L"\x0020\x0021\x002c\x003b\x007c", tokenList);   // " !,;|"
 
    trimming(filterMap, tokenList);
+
+   if (filteredOut)
+   {
+      auto i = tokenList.begin();
+      while (i != tokenList.end())
+      {
+         fputws(i->c_str(), filteredOut);
+         i++;
+         if (i != tokenList.end())
+         {
+            fputwc(L' ', filteredOut);
+         }
+         else
+         {
+            fputwc(L'\n', filteredOut);
+         }
+      }
+   }
 
    // TODO: save to file tokenList after filtering, but keep UpperChars in words.
 
@@ -648,7 +667,7 @@ void loadFile_utf8(const char* filepath, const std::wstring& filename_out, const
                const wstring_t wstr(buff);
                assert(str_sz == wstr.size());
 
-               processString(wstr, filterMap, ioMap /*, pOutputF*/);
+               processString(wstr, filterMap, ioMap, pOutputF);
             }
 
             str_sz = 0;
@@ -806,7 +825,7 @@ int main(int argc, char* argv[])
          const wstring_t mainFile = cstring_to_wstring(argv[2]);
 
          loadFile(filterFile, wstring_t(), filterMap);
-         loadFile_utf8(argv[2], mainFile + L".u16", filterMap, mainMap, wstring_t());
+         loadFile_utf8(argv[2], mainFile + L".u16", filterMap, mainMap, mainFile + L"--filtered.u16");
          mapToFile(mainFile, mainMap, wstring_t());
       }
       if (argc == 2)
