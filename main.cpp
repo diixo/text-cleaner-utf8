@@ -395,17 +395,21 @@ bool is_digit(const wstring_t& inStr, size_t start_id = 0)
 
 void trimming(const std::map <wstring_t, size_t>& filterMap, std::list <wstring_t>& outList)
 {
+   wstring_t key(L"-!?0123456789@;,.:#&%$*^/");
+
    for (std::list <wstring_t>::iterator it = outList.begin(); it != outList.end(); )
    {
       wstring_t& wstr = *it;
 
-      rtrim(wstr, L"\x0022\x0027\x0028\x0029\x003a\x005b\x005d\x003f\x002e");
-      ltrim(wstr, L"\x0022\x0027\x0028\x0029\x003a\x005b\x005d\x002b\x002d");
+      rtrim(wstr, L"\x0022\x0027\x0028\x0029\x002d\x003a\x005b\x005d\x003f\x002e");
+      ltrim(wstr, L"\x0022\x0027\x0028\x0029\x002d\x003a\x005b\x005d\x002b");
 
       //rtrim(wstr, L"\x0023\x0026\x0027\x0028\x0029\x002a\x002d\x002e\x002f\x003a\x003b\x003c\x003d\x003e\x003f\x005c\x007e\x00a9\x00ae\x005f");
       //ltrim(wstr, L"\x0023\x0026\x0027\x0028\x0029\x002a\x002d\x002f\x005c\x007e\x00a9\x00ae\x005f");
 
       {
+         bool skip = true;
+
          wstring_t tstr = wstr;
          for (int i = 0; i < tstr.length(); i++)
          {
@@ -413,27 +417,39 @@ void trimming(const std::map <wstring_t, size_t>& filterMap, std::list <wstring_
             {
                tstr[i] = towlower(tstr[i]);
             }
+
+            skip = skip && (wcschr(key.c_str(), tstr[i]) != NULL);
          }
 
-         //wcstok(wstr, L"!?0123456789@;,.:#&%$*^/_", tokenList);   // " !,;|"
 
-         //todo: isdigit, www, https
-         auto fit = filterMap.find(tstr);
-         if (fit != filterMap.end() ||
-             tstr == L"&#124" ||
-             tstr == L"&quot" ||
-             tstr == L"&amp" ||
-             tstr == L"nbsp" ||
-             tstr == L"&lt" ||
-             tstr == L"&gt" ||
-             tstr.length() == 1)
+         if (skip || tstr.empty())
          {
             it = outList.erase(it);
          }
          else
          {
-            ++it;
+            //todo: isdigit, www, https
+            auto fit = filterMap.find(tstr);
+            if (fit != filterMap.end() ||
+                tstr == L"&#124" ||
+                tstr == L"&quot" ||
+                tstr == L"&amp" ||
+                tstr == L"nbsp" ||
+                tstr == L"&lt" ||
+                tstr == L"&gt" ||
+                tstr.length() == 1 ||
+                tstr.find(L"http") != std::string::npos ||
+                tstr.find(L"java.") != std::string::npos
+               )
+            {
+               it = outList.erase(it);
+            }
+            else
+            {
+               ++it;
+            }
          }
+
       }
 
    }
