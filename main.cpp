@@ -441,7 +441,11 @@ void trimming(const std::map <wstring_t, size_t>& filterMap, std::list <wstring_
                 tstr.find(L"http") != std::string::npos ||
                 tstr.find(L"java.") != std::string::npos ||
                 tstr.find(L"com.") != std::string::npos ||
-                tstr.find(L"::") != std::string::npos
+                tstr.find(L"::") != std::string::npos ||
+                tstr.find(L"$$") != std::string::npos ||
+                tstr.find(L"~/") != std::string::npos ||
+                tstr.find(L"//") != std::string::npos ||
+                (wcspbrk(tstr.c_str(), L":][=^") != 0)
                )
             {
                it = outList.erase(it);
