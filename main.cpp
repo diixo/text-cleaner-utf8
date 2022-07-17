@@ -402,7 +402,7 @@ void trimming(const std::map <wstring_t, size_t>& filterMap, std::list <wstring_
       wstring_t& wstr = *it;
 
       rtrim(wstr, L"\x0022\x0027\x0028\x0029\x002d\x002a\x003a\x005b\x005d\x003f\x002e\x002f");
-      ltrim(wstr, L"\x0022\x0027\x0028\x0029\x002d\x002a\x003a\x005b\x005d\x002b");
+      ltrim(wstr, L"\x0022\x0027\x0028\x0029\x002d\x002a\x003a\x005b\x005d\x0023\x002b");
 
       //rtrim(wstr, L"\x0023\x0026\x0027\x0028\x0029\x002a\x002d\x002e\x002f\x003a\x003b\x003c\x003d\x003e\x003f\x005c\x007e\x00a9\x00ae\x005f");
       //ltrim(wstr, L"\x0023\x0026\x0027\x0028\x0029\x002a\x002d\x002f\x005c\x007e\x00a9\x00ae\x005f");
@@ -440,7 +440,7 @@ void trimming(const std::map <wstring_t, size_t>& filterMap, std::list <wstring_
                 tstr.length() == 1 ||
                 tstr.find(L"http") != std::string::npos ||
                 tstr.find(L"java.") != std::string::npos ||
-                tstr.find(L".com") != std::string::npos ||
+                tstr.find(L"com.") != std::string::npos ||
                 tstr.find(L"::") != std::string::npos
                )
             {
@@ -820,13 +820,16 @@ void mapToFile(const wstring_t filepath, const std::map <wstring_t, size_t>& iMa
 
    for (std::map <wstring_t, size_t>::const_iterator it = iMap.begin(); it != iMap.end(); ++it)
    {
-      fputws(&(it->first[0]), pOutFile);
-      fputwc(L' ', pOutFile);
+      //if (it->second > 2)
+      {
+         fputws(&(it->first[0]), pOutFile);
+         fputwc(L' ', pOutFile);
 
-      str = std::to_wstring(it->second);
-      fputws(&(str[0]), pOutFile);
+         str = std::to_wstring(it->second);
+         fputws(&(str[0]), pOutFile);
 
-      fputwc(L'\n', pOutFile);
+         fputwc(L'\n', pOutFile);
+      }
    }
    fclose(pOutFile);
 }
