@@ -402,7 +402,7 @@ void trimming(const std::map <wstring_t, size_t>& filterMap, std::list <wstring_
       wstring_t& wstr = *it;
 
       rtrim(wstr, L"\x0022\x0027\x0028\x0029\x002d\x002a\x003a\x005b\x005d\x003f\x002e\x002f");
-      ltrim(wstr, L"\x0022\x0027\x0028\x0029\x002d\x002a\x003a\x005b\x005d\x0023\x002b");
+      ltrim(wstr, L"\x0022\x0027\x0028\x0029\x002d\x002a\x003a\x005b\x005d\x002b");
 
       //rtrim(wstr, L"\x0023\x0026\x0027\x0028\x0029\x002a\x002d\x002e\x002f\x003a\x003b\x003c\x003d\x003e\x003f\x005c\x007e\x00a9\x00ae\x005f");
       //ltrim(wstr, L"\x0023\x0026\x0027\x0028\x0029\x002a\x002d\x002f\x005c\x007e\x00a9\x00ae\x005f");
@@ -428,31 +428,50 @@ void trimming(const std::map <wstring_t, size_t>& filterMap, std::list <wstring_
          }
          else
          {
-            //todo: isdigit, www, https
-            auto fit = filterMap.find(tstr);
-            if (fit != filterMap.end() ||
-                tstr == L"&#124" ||
-                tstr == L"&quot" ||
-                tstr == L"&amp" ||
-                tstr == L"nbsp" ||
-                tstr == L"&lt" ||
-                tstr == L"&gt" ||
-                tstr.length() == 1 ||
-                tstr.find(L"http") != std::string::npos ||
-                tstr.find(L"java.") != std::string::npos ||
-                tstr.find(L"com.") != std::string::npos ||
-                tstr.find(L"::") != std::string::npos ||
-                tstr.find(L"$$") != std::string::npos ||
-                tstr.find(L"~/") != std::string::npos ||
-                tstr.find(L"//") != std::string::npos ||
-                (wcspbrk(tstr.c_str(), L":][=^") != 0)
-               )
+            if (wstr[0] == L'#')
             {
+               ltrim(wstr, L"#");
+               ltrim(tstr, L"#");
                it = outList.erase(it);
             }
             else
             {
-               ++it;
+               //todo: isdigit, www, https
+               auto fit = filterMap.find(tstr);
+               if (fit != filterMap.end() ||
+                  tstr == L"&#124" ||
+                  tstr == L"&quot" ||
+                  tstr == L"&amp" ||
+                  tstr == L"nbsp" ||
+                  tstr == L"&lt" ||
+                  tstr == L"&gt" ||
+                  tstr.length() == 1 ||
+                  tstr.find(L"http") != std::string::npos ||
+                  tstr.find(L"java.") != std::string::npos ||
+                  tstr.find(L"com.") != std::string::npos ||
+                  tstr.find(L".com") != std::string::npos ||
+                  tstr.find(L"tf.") != std::string::npos ||
+                  tstr.find(L"::") != std::string::npos ||
+                  tstr.find(L"$$") != std::string::npos ||
+                  tstr.find(L"~/") != std::string::npos ||
+                  tstr.find(L"//") != std::string::npos ||
+                  tstr.find(L"0x") != std::string::npos ||
+                  tstr.find(L"$\\") != std::string::npos ||
+                  tstr.find(L"/.") != std::string::npos ||
+                  tstr.find(L"/&") != std::string::npos ||
+                  tstr.find(L"./") != std::string::npos ||
+                  tstr.find(L"'/") != std::string::npos ||
+                  tstr.find(L"$(") != std::string::npos ||
+                  tstr.find(L"\\\\") != std::string::npos ||
+                  (wcspbrk(tstr.c_str(), L":][=^{}") != 0)
+                  )
+               {
+                  it = outList.erase(it);
+               }
+               else
+               {
+                  ++it;
+               }
             }
          }
 
