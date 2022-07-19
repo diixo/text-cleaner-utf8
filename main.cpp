@@ -450,6 +450,7 @@ void trimming(const std::map <wstring_t, size_t>& filterMap, std::list <wstring_
                   tstr.find(L"java.") != std::string::npos ||
                   tstr.find(L"com.") != std::string::npos ||
                   tstr.find(L"org.") != std::string::npos ||
+                  tstr.find(L".org") != std::string::npos ||
                   tstr.find(L".com") != std::string::npos ||
                   tstr.find(L".txt") != std::string::npos ||
                   tstr.find(L".log") != std::string::npos ||
@@ -457,6 +458,15 @@ void trimming(const std::map <wstring_t, size_t>& filterMap, std::list <wstring_
                   tstr.find(L".sh") != std::string::npos ||
                   tstr.find(L".py") != std::string::npos ||
                   tstr.find(L".js") != std::string::npos ||
+                  tstr.find(L".php") != std::string::npos ||
+                  tstr.find(L".htm") != std::string::npos ||
+                  tstr.find(L".png") != std::string::npos ||
+                  tstr.find(L".jpg") != std::string::npos ||
+                  tstr.find(L"?php") != std::string::npos ||
+                  tstr.find(L".jar") != std::string::npos ||
+                  tstr.find(L".obj") != std::string::npos ||
+                  tstr.find(L".dll") != std::string::npos ||
+
                   tstr.find(L"tf.") != std::string::npos ||
                   tstr.find(L"::") != std::string::npos ||
                   tstr.find(L"$$") != std::string::npos ||
@@ -836,10 +846,17 @@ void loadFile(const std::wstring& filename_in, const std::wstring& filename_out,
 
             //processString(buff, str_sz, ioMap);
             {
-               const wstring_t wstr(buff);
+               wstring_t wstr(buff);
                assert(str_sz == wstr.size());
 
-               ioMap[wstr] = 1;
+               ltrim(wstr, L"#");
+               if (!wstr.empty())
+               {
+                  if (!is_digit(wstr))
+                  {
+                     ioMap[wstr] = 1;
+                  }
+               }
             }
 
             str_sz = 0;
