@@ -452,6 +452,7 @@ void trimming(const std::map <wstring_t, size_t>& filterMap, std::list <wstring_
                   tstr.find(L"org.") != std::string::npos ||
                   tstr.find(L".com") != std::string::npos ||
                   tstr.find(L".txt") != std::string::npos ||
+                  tstr.find(L".log") != std::string::npos ||
                   tstr.find(L".exe") != std::string::npos ||
                   tstr.find(L".sh") != std::string::npos ||
                   tstr.find(L".py") != std::string::npos ||
@@ -477,6 +478,7 @@ void trimming(const std::map <wstring_t, size_t>& filterMap, std::list <wstring_
                   tstr.find(L"--") != std::string::npos ||
                   tstr.find(L"\\\\") != std::string::npos ||
                   tstr.find(L".*") != std::string::npos ||
+                  tstr.find(L".$") != std::string::npos ||
                   tstr.find(L"($") != std::string::npos ||
                   tstr.find(L"\\?") != std::string::npos ||
                   tstr.find(L"/*") != std::string::npos ||
@@ -491,7 +493,7 @@ void trimming(const std::map <wstring_t, size_t>& filterMap, std::list <wstring_
                   auto check = [&filterMap, &tstr]()->bool
                   {
                      std::list<std::wstring> tmpList;
-                     wcstok(tstr, L"/", tmpList);
+                     wcstok(tstr, L"/()\\", tmpList);
                      if (tmpList.size() == 1) return false;
 
                      for (auto itt = tmpList.begin(); itt != tmpList.end(); )
