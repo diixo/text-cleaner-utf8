@@ -449,7 +449,12 @@ void trimming(const std::map <wstring_t, size_t>& filterMap, std::list <wstring_
                   tstr.find(L"http") != std::string::npos ||
                   tstr.find(L"java.") != std::string::npos ||
                   tstr.find(L"com.") != std::string::npos ||
+                  tstr.find(L"org.") != std::string::npos ||
                   tstr.find(L".com") != std::string::npos ||
+                  tstr.find(L".txt") != std::string::npos ||
+                  tstr.find(L".exe") != std::string::npos ||
+                  tstr.find(L".sh") != std::string::npos ||
+                  tstr.find(L".py") != std::string::npos ||
                   tstr.find(L".js") != std::string::npos ||
                   tstr.find(L"tf.") != std::string::npos ||
                   tstr.find(L"::") != std::string::npos ||
@@ -465,8 +470,11 @@ void trimming(const std::map <wstring_t, size_t>& filterMap, std::list <wstring_
                   tstr.find(L"'/") != std::string::npos ||
                   tstr.find(L"('") != std::string::npos ||
                   tstr.find(L"$(") != std::string::npos ||
+                  tstr.find(L").") != std::string::npos ||
+                  tstr.find(L"(&") != std::string::npos ||
                   tstr.find(L"-&") != std::string::npos ||
                   tstr.find(L"__") != std::string::npos ||
+                  tstr.find(L"--") != std::string::npos ||
                   tstr.find(L"\\\\") != std::string::npos ||
                   tstr.find(L".*") != std::string::npos ||
                   tstr.find(L"($") != std::string::npos ||
@@ -480,7 +488,34 @@ void trimming(const std::map <wstring_t, size_t>& filterMap, std::list <wstring_
                }
                else
                {
-                  ++it;
+                  auto check = [&filterMap, &tstr]()->bool
+                  {
+                     std::list<std::wstring> tmpList;
+                     wcstok(tstr, L"/", tmpList);
+                     if (tmpList.size() == 1) return false;
+
+                     for (auto itt = tmpList.begin(); itt != tmpList.end(); )
+                     {
+                        if (filterMap.find(*itt) != filterMap.end())
+                        {
+                           itt = tmpList.erase(itt);
+                        }
+                        else
+                        {
+                           break;
+                        }
+                     }
+                     return tmpList.empty();
+                  };
+
+                  if (check())
+                  {
+                     it = outList.erase(it);
+                  }
+                  else
+                  {
+                     ++it;
+                  }
                }
             }
          }
