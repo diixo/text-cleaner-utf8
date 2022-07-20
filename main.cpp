@@ -422,7 +422,7 @@ void trimming(const std::map <wstring_t, size_t>& filterMap, std::list <wstring_
          }
 
 
-         if (skip || tstr.empty())
+         if (skip || (tstr.length() <= 2))
          {
             it = outList.erase(it);
          }
@@ -936,6 +936,7 @@ int main(int argc, char* argv[])
    }
    else
    {
+      wprintf(L"Text-cleaner [Version 30 ] (c) Diixo\n");
       if (argc == 3)
       {
          const wstring_t filterFile = cstring_to_wstring(argv[1]);
