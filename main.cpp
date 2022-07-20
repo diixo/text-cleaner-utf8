@@ -484,6 +484,7 @@ void trimming(const std::map <wstring_t, size_t>& filterMap, std::list <wstring_
                   tstr.find(L").") != std::string::npos ||
                   tstr.find(L"(&") != std::string::npos ||
                   tstr.find(L"-&") != std::string::npos ||
+                  tstr.find(L"%&") != std::string::npos ||
                   tstr.find(L"__") != std::string::npos ||
                   tstr.find(L"--") != std::string::npos ||
                   tstr.find(L"\\\\") != std::string::npos ||
