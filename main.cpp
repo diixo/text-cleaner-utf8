@@ -21,6 +21,8 @@
 typedef std::wstring wstring_t;
 typedef unsigned int UInt32;
 
+std::map <wstring_t, size_t> maskedMap;
+
 // https://secure.n-able.com/webhelp/NC_9-1-0_SO_en/Content/SA_docs/API_Level_Integration/API_Integration_URLEncoding.html
 //////////////////////////////////////////////////////////////////////////
 
@@ -395,7 +397,7 @@ bool is_digit(const wstring_t& inStr, size_t start_id = 0)
 
 void trimming(const std::map <wstring_t, size_t>& filterMap, std::list <wstring_t>& outList)
 {
-   wstring_t key(L"-!?0123456789@;,.:#&%$*^/");
+   wstring_t key(L"x_)(-!?0123456789@;,.:#&%$*^'~/\\");
 
    for (std::list <wstring_t>::iterator it = outList.begin(); it != outList.end(); )
    {
@@ -491,6 +493,7 @@ void trimming(const std::map <wstring_t, size_t>& filterMap, std::list <wstring_
                   tstr.find(L".*") != std::string::npos ||
                   tstr.find(L".$") != std::string::npos ||
                   tstr.find(L"($") != std::string::npos ||
+                  tstr.find(L"$-") != std::string::npos ||
                   tstr.find(L"\\?") != std::string::npos ||
                   tstr.find(L"/*") != std::string::npos ||
                   tstr.find(L"*/") != std::string::npos ||
@@ -501,10 +504,10 @@ void trimming(const std::map <wstring_t, size_t>& filterMap, std::list <wstring_
                }
                else
                {
-                  auto check = [&filterMap, &tstr]()->bool
+                  auto check = [&filterMap, &tstr](const wchar_t* Delim)->bool
                   {
                      std::list<std::wstring> tmpList;
-                     wcstok(tstr, L"/()\\", tmpList);
+                     wcstok(tstr, Delim, tmpList);
                      if (tmpList.size() == 1) return false;
 
                      for (auto itt = tmpList.begin(); itt != tmpList.end(); )
@@ -521,13 +524,27 @@ void trimming(const std::map <wstring_t, size_t>& filterMap, std::list <wstring_
                      return tmpList.empty();
                   };
 
-                  if (check())
+                  // check with splitting by mask: xx/xx/xx
+                  if (check(L"./()\\"))
                   {
                      it = outList.erase(it);
                   }
                   else
                   {
-                     ++it;
+                     // check with splitting by mask: xx-xx-xx
+                     if (check(L"-"))
+                     {
+                        auto itf = maskedMap.find(*it);
+                        if (itf != maskedMap.end()) { itf->second++; }
+                        else { maskedMap[*it] = 1; }
+                        //////////////////////////////////////////////
+
+                        it = outList.erase(it);
+                     }
+                     else
+                     {
+                        ++it;
+                     }
                   }
                }
             }
@@ -892,6 +909,7 @@ void loadFile(const std::wstring& filename_in, const std::wstring& filename_out,
 void mapToFile(const wstring_t filepath, const std::map <wstring_t, size_t>& iMap, const wstring_t title)
 {
    FILE* pOutFile = _wfopen(wstring_t(filepath + L"--dictionary.dictionary").c_str(), L"w, ccs=UTF-16LE");
+   FILE* pMaskedFile = _wfopen(wstring_t(filepath + L"--masked.dictionary").c_str(), L"w, ccs=UTF-16LE");
 
    if (!title.empty())
    {
@@ -919,7 +937,23 @@ void mapToFile(const wstring_t filepath, const std::map <wstring_t, size_t>& iMa
          fputwc(L'\n', pOutFile);
       }
    }
+
+   if (!maskedMap.empty())
+   {
+      for (auto itt = maskedMap.begin(); itt != maskedMap.end(); itt++)
+      {
+         fputws(&(itt->first[0]), pMaskedFile);
+         fputwc(L' ', pMaskedFile);
+
+         str = std::to_wstring(itt->second);
+         fputws(&(str[0]), pMaskedFile);
+
+         fputwc(L'\n', pMaskedFile);
+      }
+   }
+
    fclose(pOutFile);
+   fclose(pMaskedFile);
 }
 
 
@@ -932,11 +966,12 @@ int main(int argc, char* argv[])
    {
       report(mainMap, filterMap, filterMap, filterMap);
       wprintf(L"No extra command-line arguments passed:\n");
-      wprintf(L"%s <inputfile.u16>\n", cstring_to_wstring(argv[0]).c_str());
+      wprintf(L"%s <input-file.u16>\n", cstring_to_wstring(argv[0]).c_str());
+      wprintf(L"%s <filter-dictionary.u16> <input-file.u16>\n", cstring_to_wstring(argv[0]).c_str());
    }
    else
    {
-      wprintf(L"Text-cleaner [Version 30 ] (c) Diixo\n");
+      wprintf(L"Text-cleaner [Version 32] (c) Diixo\n");
       if (argc == 3)
       {
          const wstring_t filterFile = cstring_to_wstring(argv[1]);
