@@ -534,11 +534,11 @@ void trimming(const std::map <wstring_t, size_t>& filterMap, std::list <wstring_
                      // check with splitting by mask: xx-xx-xx
                      if (check(L"-"))
                      {
-                        auto itf = maskedMap.find(*it);
+                        auto itf = maskedMap.find(tstr);
                         if (itf != maskedMap.end()) { itf->second++; }
-                        else { maskedMap[*it] = 1; }
+                        else { maskedMap[tstr] = 1; }
                         //////////////////////////////////////////////
-
+                        // tstr = *it
                         it = outList.erase(it);
                      }
                      else
@@ -549,9 +549,7 @@ void trimming(const std::map <wstring_t, size_t>& filterMap, std::list <wstring_
                }
             }
          }
-
       }
-
    }
 }
 
@@ -971,7 +969,7 @@ int main(int argc, char* argv[])
    }
    else
    {
-      wprintf(L"Text-cleaner [Version 32] (c) Diixo\n");
+      wprintf(L"Text-cleaner [Version 33] (c) Diixo\n");
       if (argc == 3)
       {
          const wstring_t filterFile = cstring_to_wstring(argv[1]);
