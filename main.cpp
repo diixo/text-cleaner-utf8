@@ -469,6 +469,7 @@ void trimming(const std::map <wstring_t, size_t>& filterMap, std::list <wstring_
                   tstr.find(L".obj") != std::string::npos ||
                   tstr.find(L".dll") != std::string::npos ||
 
+                  tstr.find(L"tfp.") != std::string::npos ||
                   tstr.find(L"tf.") != std::string::npos ||
                   tstr.find(L"::") != std::string::npos ||
                   tstr.find(L"$$") != std::string::npos ||
@@ -525,7 +526,7 @@ void trimming(const std::map <wstring_t, size_t>& filterMap, std::list <wstring_
                   };
 
                   // check with splitting by mask: xx/xx/xx
-                  if (check(L"./()\\"))
+                  if (check(L"_./()\\"))
                   {
                      it = outList.erase(it);
                   }
@@ -969,7 +970,7 @@ int main(int argc, char* argv[])
    }
    else
    {
-      wprintf(L"Text-cleaner [Version 33] (c) Diixo\n");
+      wprintf(L"Text-cleaner [Version 36] (c) Diixo\n");
       if (argc == 3)
       {
          const wstring_t filterFile = cstring_to_wstring(argv[1]);
