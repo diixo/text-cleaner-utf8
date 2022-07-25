@@ -397,7 +397,7 @@ bool is_digit(const wstring_t& inStr, size_t start_id = 0)
 
 void trimming(const std::map <wstring_t, size_t>& filterMap, std::list <wstring_t>& outList)
 {
-   wstring_t key(L"x_)(-!?0123456789@;,.:#&%$*^'~/\\");
+   wstring_t key(L"x_)(+-!?0123456789@;,.:#&%$*^'~/\\");
 
    for (std::list <wstring_t>::iterator it = outList.begin(); it != outList.end(); )
    {
@@ -970,7 +970,7 @@ int main(int argc, char* argv[])
    }
    else
    {
-      wprintf(L"Text-cleaner [Version 36] (c) Diixo\n");
+      wprintf(L"Text-cleaner [Version 38] (c) Diixo\n");
       if (argc == 3)
       {
          const wstring_t filterFile = cstring_to_wstring(argv[1]);
