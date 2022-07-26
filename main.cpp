@@ -752,6 +752,7 @@ void loadFile_utf8(const char* filepath, const std::wstring& filename_out, const
 
    FILE *pOutput = (filename_out.length() > 0) ? _wfopen(filename_out.c_str(), L"w, ccs=UTF-16LE") : 0;
    FILE *pOutputF = (filtered_out.length() > 0) ? _wfopen(filtered_out.c_str(), L"w, ccs=UTF-16LE") : 0;
+   //FILE *pOutputF = (filtered_out.length() > 0) ? _wfopen(filtered_out.c_str(), L"w, ccs=UTF-8") : 0;
    UInt32 lineNumber = 0;
    /////////////////////////////////////////////////////////////////////////
 
@@ -908,7 +909,7 @@ void loadFile(const std::wstring& filename_in, const std::wstring& filename_out,
 void mapToFile(const wstring_t filepath, const std::map <wstring_t, size_t>& iMap, const wstring_t title)
 {
    FILE* pOutFile = _wfopen(wstring_t(filepath + L"--dictionary.dictionary").c_str(), L"w, ccs=UTF-16LE");
-   FILE* pMaskedFile = _wfopen(wstring_t(filepath + L"--masked.dictionary").c_str(), L"w, ccs=UTF-16LE");
+   FILE* pMaskedFile = _wfopen(wstring_t(filepath + L"--masked.dictionary").c_str(), L"w, ccs=UTF-8");
 
    if (!title.empty())
    {
@@ -970,7 +971,7 @@ int main(int argc, char* argv[])
    }
    else
    {
-      wprintf(L"Text-cleaner [Version 38] (c) Diixo\n");
+      wprintf(L"Text-cleaner [Version 39] (c) Diixo\n");
       if (argc == 3)
       {
          const wstring_t filterFile = cstring_to_wstring(argv[1]);
