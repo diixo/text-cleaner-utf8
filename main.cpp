@@ -509,11 +509,11 @@ void trimming(const std::map <wstring_t, size_t>& filterMap, std::list <wstring_
                   {
                      std::list<std::wstring> tmpList;
                      wcstok(tstr, Delim, tmpList);
-                     if (tmpList.size() == 1) return false;
+                     //if (tmpList.size() == 1) return false;
 
                      for (auto itt = tmpList.begin(); itt != tmpList.end(); )
                      {
-                        if (filterMap.find(*itt) != filterMap.end())
+                        if (filterMap.find(*itt) != filterMap.end() || is_digit(*itt))
                         {
                            itt = tmpList.erase(itt);
                         }
@@ -526,7 +526,7 @@ void trimming(const std::map <wstring_t, size_t>& filterMap, std::list <wstring_
                   };
 
                   // check with splitting by mask: xx/xx/xx
-                  if (check(L"_./()\\"))
+                  if (check(L"@_./()\\"))
                   {
                      it = outList.erase(it);
                   }
@@ -751,8 +751,8 @@ void loadFile_utf8(const char* filepath, const std::wstring& filename_out, const
    }
 
    FILE *pOutput = (filename_out.length() > 0) ? _wfopen(filename_out.c_str(), L"w, ccs=UTF-16LE") : 0;
-   FILE *pOutputF = (filtered_out.length() > 0) ? _wfopen(filtered_out.c_str(), L"w, ccs=UTF-16LE") : 0;
-   //FILE *pOutputF = (filtered_out.length() > 0) ? _wfopen(filtered_out.c_str(), L"w, ccs=UTF-8") : 0;
+   //FILE *pOutputF = (filtered_out.length() > 0) ? _wfopen(filtered_out.c_str(), L"w, ccs=UTF-16LE") : 0;
+   FILE *pOutputF = (filtered_out.length() > 0) ? _wfopen(filtered_out.c_str(), L"w, ccs=UTF-8") : 0;
    UInt32 lineNumber = 0;
    /////////////////////////////////////////////////////////////////////////
 
@@ -909,7 +909,7 @@ void loadFile(const std::wstring& filename_in, const std::wstring& filename_out,
 void mapToFile(const wstring_t filepath, const std::map <wstring_t, size_t>& iMap, const wstring_t title)
 {
    FILE* pOutFile = _wfopen(wstring_t(filepath + L"--dictionary.dictionary").c_str(), L"w, ccs=UTF-16LE");
-   FILE* pMaskedFile = _wfopen(wstring_t(filepath + L"--masked.dictionary").c_str(), L"w, ccs=UTF-8");
+   FILE* pMaskedFile = _wfopen(wstring_t(filepath + L"--combine.dictionary").c_str(), L"w, ccs=UTF-8");
 
    if (!title.empty())
    {
@@ -971,7 +971,7 @@ int main(int argc, char* argv[])
    }
    else
    {
-      wprintf(L"Text-cleaner [Version 39] (c) Diixo\n");
+      wprintf(L"Text-cleaner [Version 40] (c) Diixo\n");
       if (argc == 3)
       {
          const wstring_t filterFile = cstring_to_wstring(argv[1]);
