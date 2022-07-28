@@ -350,7 +350,7 @@ wstring_t& trim(wstring_t& inStr, const wstring_t& Delim)
    return ltrim(rtrim(inStr, Delim), Delim);
 }
 
-bool is_number(const wstring_t& inStr, size_t start_id = 0)
+bool is_digit(const wstring_t& inStr, size_t start_id = 0)
 {
    bool result = (start_id < inStr.size());
    while (start_id < inStr.size())
@@ -373,21 +373,6 @@ bool is_anydigit(const wstring_t& inStr, size_t start_id = 0)
       if (iswdigit(inStr[start_id]))
       {
          result = true;
-         break;
-      }
-      start_id++;
-   }
-   return result;
-}
-
-bool is_digit(const wstring_t& inStr, size_t start_id = 0)
-{
-   bool result = true;
-   while (start_id < inStr.size())
-   {
-      if (!iswdigit(inStr[start_id]))
-      {
-         result = false;
          break;
       }
       start_id++;
@@ -468,6 +453,7 @@ void trimming(const std::map <wstring_t, size_t>& filterMap, std::list <wstring_
                   tstr.find(L".jar") != std::string::npos ||
                   tstr.find(L".obj") != std::string::npos ||
                   tstr.find(L".dll") != std::string::npos ||
+                  tstr.find(L".tar") != std::string::npos ||
 
                   tstr.find(L"tfp.") != std::string::npos ||
                   tstr.find(L"tf.") != std::string::npos ||
@@ -526,7 +512,7 @@ void trimming(const std::map <wstring_t, size_t>& filterMap, std::list <wstring_
                   };
 
                   // check with splitting by mask: xx/xx/xx
-                  if (check(L"@_./()\\"))
+                  if (check(L"$~@_./()\\"))
                   {
                      it = outList.erase(it);
                   }
@@ -971,7 +957,7 @@ int main(int argc, char* argv[])
    }
    else
    {
-      wprintf(L"Text-cleaner [Version 40] (c) Diixo\n");
+      wprintf(L"Text-cleaner [Version 41] (c) Diixo\n");
       if (argc == 3)
       {
          const wstring_t filterFile = cstring_to_wstring(argv[1]);
