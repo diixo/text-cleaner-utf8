@@ -382,7 +382,7 @@ bool is_anydigit(const wstring_t& inStr, size_t start_id = 0)
 
 void trimming(const std::map <wstring_t, size_t>& filterMap, std::list <wstring_t>& outList)
 {
-   wstring_t key(L"x_)(+-!?0123456789@;,.:#&%$*^'~/\\");
+   wstring_t key(L"rvx_)(+-!?0123456789@;,.:#&%$*^'~/\\");
 
    for (std::list <wstring_t>::iterator it = outList.begin(); it != outList.end(); )
    {
@@ -457,6 +457,29 @@ void trimming(const std::map <wstring_t, size_t>& filterMap, std::list <wstring_
 
                   tstr.find(L"tfp.") != std::string::npos ||
                   tstr.find(L"tf.") != std::string::npos ||
+                  tstr.find(L"tfm.") != std::string::npos ||
+                  tstr.find(L"tflite_") != std::string::npos ||
+                  tstr.find(L"tfc.") != std::string::npos ||
+                  tstr.find(L"tfa.") != std::string::npos ||
+                  tstr.find(L"tff.") != std::string::npos ||
+                  tstr.find(L"tfds.") != std::string::npos ||
+                  tstr.find(L"tft.") != std::string::npos ||
+                  tstr.find(L"tfma.") != std::string::npos ||
+                  tstr.find(L"tfx.") != std::string::npos ||
+                  tstr.find(L"tfdv.") != std::string::npos ||
+                  tstr.find(L"tfmd.") != std::string::npos ||
+                  tstr.find(L"tfrs.") != std::string::npos ||
+                  tstr.find(L"tfdf.") != std::string::npos ||
+                  tstr.find(L"tfl.") != std::string::npos ||
+                  tstr.find(L"tfr.") != std::string::npos ||
+                  tstr.find(L"tfg.") != std::string::npos ||
+                  tstr.find(L"tf_agents.") != std::string::npos ||
+                  tstr.find(L"tfmot.") != std::string::npos ||
+                  tstr.find(L"tfq.") != std::string::npos ||
+                  tstr.find(L"tfm.") != std::string::npos ||
+                  tstr.find(L"tfio.") != std::string::npos ||
+                  tstr.find(L"oryx.") != std::string::npos ||
+
                   tstr.find(L"::") != std::string::npos ||
                   tstr.find(L"$$") != std::string::npos ||
                   tstr.find(L"~/") != std::string::npos ||
@@ -499,7 +522,7 @@ void trimming(const std::map <wstring_t, size_t>& filterMap, std::list <wstring_
 
                      for (auto itt = tmpList.begin(); itt != tmpList.end(); )
                      {
-                        if (filterMap.find(*itt) != filterMap.end() || is_digit(*itt))
+                        if (filterMap.find(*itt) != filterMap.end() || is_digit(*itt) || (itt->length() == 1))
                         {
                            itt = tmpList.erase(itt);
                         }
@@ -957,7 +980,7 @@ int main(int argc, char* argv[])
    }
    else
    {
-      wprintf(L"Text-cleaner [Version 41] (c) Diixo\n");
+      wprintf(L"Text-cleaner [Version 42] (c) Diixo\n");
       if (argc == 3)
       {
          const wstring_t filterFile = cstring_to_wstring(argv[1]);
