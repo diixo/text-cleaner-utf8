@@ -980,7 +980,7 @@ int main(int argc, char* argv[])
    }
    else
    {
-      wprintf(L"Text-cleaner [Version 42] (c) Diixo\n");
+      wprintf(L"Text-cleaner [Version 43] (c) Diixo\n");
       if (argc == 3)
       {
          const wstring_t filterFile = cstring_to_wstring(argv[1]);
