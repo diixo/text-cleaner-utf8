@@ -514,7 +514,7 @@ void trimming(const std::map <wstring_t, size_t>& filterMap, std::list <wstring_
                }
                else
                {
-                  auto check = [&filterMap, &tstr](const wchar_t* Delim)->bool
+                  auto check = [&filterMap, &tstr](const wchar_t* Delim)->int
                   {
                      std::list<std::wstring> tmpList;
                      wcstok(tstr, Delim, tmpList);
@@ -522,7 +522,11 @@ void trimming(const std::map <wstring_t, size_t>& filterMap, std::list <wstring_
 
                      for (auto itt = tmpList.begin(); itt != tmpList.end(); )
                      {
-                        if (filterMap.find(*itt) != filterMap.end() || is_digit(*itt) || (itt->length() == 1))
+                        if (is_digit(*itt))
+                        {
+                           return -1;
+                        }
+                        else if (filterMap.find(*itt) != filterMap.end() || (itt->length() == 1))
                         {
                            itt = tmpList.erase(itt);
                         }
@@ -531,23 +535,59 @@ void trimming(const std::map <wstring_t, size_t>& filterMap, std::list <wstring_
                            break;
                         }
                      }
-                     return tmpList.empty();
+                     return (int)tmpList.empty();
                   };
 
+                  auto checkStrong = [&filterMap, &tstr](const wchar_t* Delim)->int
+                  {
+                     std::list<std::wstring> tmpList;
+                     wcstok(tstr, Delim, tmpList);
+                     const std::wstring trim_separator(L"$~@_.()?~%");
+
+                     for (auto itt = tmpList.begin(); itt != tmpList.end(); )
+                     {
+                        trim(*itt, trim_separator);
+
+                        if (is_digit(*itt))
+                        {
+                           return -1;
+                        }
+                        else if (filterMap.find(*itt) != filterMap.end() || (itt->length() == 1))
+                        {
+                           itt = tmpList.erase(itt);
+                        }
+                        else
+                        {
+                           break;
+                        }
+                     }
+                     return (int)tmpList.empty();
+                  };
+
+                  int checkR = check(L"$~@_.()?~%/\\");
+
                   // check with splitting by mask: xx/xx/xx
-                  if (check(L"$~@_./()\\"))
+                  if (checkR > 0 || checkR < 0)
                   {
                      it = outList.erase(it);
                   }
                   else
                   {
+                     checkR = check(L"$~@_.()?~%-");
+
                      // check with splitting by mask: xx-xx-xx
-                     if (check(L"-"))
+                     if (checkR > 0)
                      {
                         auto itf = maskedMap.find(tstr);
                         if (itf != maskedMap.end()) { itf->second++; }
                         else { maskedMap[tstr] = 1; }
                         //////////////////////////////////////////////
+                        // tstr = *it
+                        it = outList.erase(it);
+                     }
+                     else if (checkR < 0)
+                     {
+                        // skip without adding to dictionary
                         // tstr = *it
                         it = outList.erase(it);
                      }
@@ -980,7 +1020,7 @@ int main(int argc, char* argv[])
    }
    else
    {
-      wprintf(L"Text-cleaner [Version 43] (c) Diixo\n");
+      wprintf(L"Text-cleaner [Version 46] (c) Diixo\n");
       if (argc == 3)
       {
          const wstring_t filterFile = cstring_to_wstring(argv[1]);
