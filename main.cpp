@@ -520,6 +520,8 @@ void trimming(const std::map <wstring_t, size_t>& filterMap, std::list <wstring_
                      wcstok(tstr, Delim, tmpList);
                      //if (tmpList.size() == 1) return false;
 
+                     //const std::wstring trim_separator(L"-");
+
                      for (auto itt = tmpList.begin(); itt != tmpList.end(); )
                      {
                         if (is_digit(*itt))
@@ -542,17 +544,17 @@ void trimming(const std::map <wstring_t, size_t>& filterMap, std::list <wstring_
                   {
                      std::list<std::wstring> tmpList;
                      wcstok(tstr, Delim, tmpList);
-                     const std::wstring trim_separator(L"$~@_.()?~%");
+                     const std::wstring trim_separator(L"$~@_.()*?~%");
 
                      for (auto itt = tmpList.begin(); itt != tmpList.end(); )
                      {
                         trim(*itt, trim_separator);
 
-                        if (is_digit(*itt))
+                        if (is_digit(*itt) || itt->empty())
                         {
                            return -1;
                         }
-                        else if (filterMap.find(*itt) != filterMap.end() || (itt->length() == 1))
+                        else if (filterMap.find(*itt) != filterMap.end())
                         {
                            itt = tmpList.erase(itt);
                         }
@@ -564,7 +566,7 @@ void trimming(const std::map <wstring_t, size_t>& filterMap, std::list <wstring_
                      return (int)tmpList.empty();
                   };
 
-                  int checkR = check(L"$~@_.()?~%/\\");
+                  int checkR = check(L"$~@_.()*?~%/\\");
 
                   // check with splitting by mask: xx/xx/xx
                   if (checkR > 0 || checkR < 0)
@@ -573,7 +575,7 @@ void trimming(const std::map <wstring_t, size_t>& filterMap, std::list <wstring_
                   }
                   else
                   {
-                     checkR = check(L"$~@_.()?~%-");
+                     checkR = checkStrong(L"-");
 
                      // check with splitting by mask: xx-xx-xx
                      if (checkR > 0)
@@ -1020,7 +1022,7 @@ int main(int argc, char* argv[])
    }
    else
    {
-      wprintf(L"Text-cleaner [Version 46] (c) Diixo\n");
+      wprintf(L"Text-cleaner [Version 47] (c) Diixo\n");
       if (argc == 3)
       {
          const wstring_t filterFile = cstring_to_wstring(argv[1]);
