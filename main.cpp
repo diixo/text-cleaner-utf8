@@ -548,6 +548,7 @@ void trimming(const std::map <wstring_t, size_t>& filterMap, std::list <wstring_
 
                      for (auto itt = tmpList.begin(); itt != tmpList.end(); )
                      {
+                        // todo: will remove to make will strong filtering (search with trash decreased result).
                         trim(*itt, trim_separator);
 
                         if (is_digit(*itt) || itt->empty())
